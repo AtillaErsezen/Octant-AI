@@ -18,8 +18,8 @@ WORKDIR /app
 
 # Upgrade pip and install standard
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir uv && \
+    uv pip install --system --no-cache --prerelease=allow -r requirements.txt
 
 # Copy backend context
 COPY . /app/backend

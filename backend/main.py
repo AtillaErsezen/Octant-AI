@@ -7,21 +7,19 @@ import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from fastapi import FastAPI
-from backend.health import router as health_router, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from backend.health import router as health_router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from backend.config import get_settings
-from backend.pulse import ConnectionManager
+from backend.pulse import ConnectionManager, manager
 
 logger = logging.getLogger(__name__)
 
 
 # ── Global singleton connection manager ──────────────────────────────────
-
-manager = ConnectionManager()
-
+# Now imported from backend.pulse to avoid circular imports.
 
 
 
@@ -135,6 +133,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                         # Keep the connection alive and receive any client messages
                         # (e.g., binary audio chunks for voice transcription, control messages)
             data = await websocket.receive()
+            
+            if data.get("type") == "websocket.disconnect":
+                raise WebSocketDisconnect()
 
             if "text" in data:
                                 # Text messages are control commands (e.g., stop, restart)

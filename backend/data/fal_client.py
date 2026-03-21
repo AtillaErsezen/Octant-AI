@@ -19,11 +19,11 @@ class FalChartClient:
     def __init__(self) -> None:
         """initialise fal ai credentials lol"""
         settings = get_settings()
-        self.api_key = settings.FAL_KEY
+        self.api_key = settings.FAL_API_KEY
         if self.api_key:
             os.environ["FAL_KEY"] = self.api_key
         else:
-            logger.warning("FAL_KEY is not configured. Sparklines will not render.")
+            logger.warning("FAL_API_KEY is not configured. Sparklines will not render.")
 
     async def generate_sparkline(
         self, symbol: str, price_series: List[float], width: int = 120, height: int = 40

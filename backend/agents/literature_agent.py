@@ -25,10 +25,10 @@ class LiteratureAgent:
 
     def __init__(self, gemini_client):
         self.gemini = gemini_client
-        self.literature_engine = LiteratureEngine(gemini_client)
+        self.literature_engine = LiteratureEngine()
         self.ssrn_scraper = SSRNScraper(gemini_client)
         self.mf_scraper = ModernFinanceScraper(gemini_client)
-        self.chroma_store = ChromaStore(gemini_client)
+        self.chroma_store = ChromaStore()
 
     def _build_queries(self, hypothesis: HypothesisObject) -> List[str]:
         """generates 5-8 search queries mixing domain keywords and mathematical bounds lol"""
@@ -104,7 +104,7 @@ class LiteratureAgent:
 
         for i, hyp in enumerate(hypotheses):
             step = i + 1
-            await pulse.emit_status("literature", "active", step, total_h, f"Researching Hypothesis {step}", f"Compiling queries for: {hyp.hypothesis[:40]}...", int((step/total_h)*100), (total_h-step)*45)
+            await pulse.emit_status("literature", "active", step, total_h, f"Researching Hypothesis {step}", f"Compiling queries for: {hyp.statement[:40]}...", int((step/total_h)*100), (total_h-step)*45)
 
             
             # 2. Build queries
@@ -171,7 +171,7 @@ class LiteratureAgent:
                         # We already have abstracts, but the master spec requests a batch structural pass
                         # We'll re-run them through the Engine's Gemini method to inject the hypothesis context
             if unique_papers:
-                analyzed_papers = await self.literature_engine._analyze_papers_with_gemini(unique_papers, hyp.hypothesis)
+                analyzed_papers = await self.literature_engine._analyze_papers_with_gemini(unique_papers, hyp.statement)
             else:
                 analyzed_papers = []
 

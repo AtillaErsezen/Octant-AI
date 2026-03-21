@@ -1,11 +1,18 @@
+import SectionExcerpt from './SectionExcerpt';
+
 const EXPECTED_SECTIONS = [
   { id: 'Abstract', label: 'Abstract & Summary' },
   { id: '1_Introduction', label: '1. Introduction' },
   { id: '2_Literature_Review', label: '2. Literature Evaluation' },
-  { id: '3_Methodology', label: '3. Math / Methodology' },
-  { id: '4_Results', label: '4. Structural Results' },
-  { id: '5_Discussion', label: '5. Technical Discussion' },
-  { id: '6_Conclusions', label: '6. Final Adjudication' }
+  { id: '3_Data_and_Universe', label: '3. Data and Universe' },
+  { id: '4_Methodology', label: '4. Methodology' },
+  { id: '5_Results', label: '5. Results' },
+  { id: '6_Discussion', label: '6. Discussion' },
+  { id: '7_Conclusions', label: '7. Conclusions' },
+  { id: 'Appendix_A', label: 'Appendix A (Math)' },
+  { id: 'Appendix_B', label: 'Appendix B (Stats)' },
+  { id: 'Appendix_C', label: 'Appendix C (Citations)' },
+  { id: 'Appendix_D', label: 'Appendix D (Code)' }
 ];
 
 export default function ReportOutline({ sections }: { sections: any[] }) {
@@ -22,9 +29,7 @@ export default function ReportOutline({ sections }: { sections: any[] }) {
                <span className={`text-xs font-semibold ${generated ? 'text-gray-300' : 'text-gray-600'}`}>{req.label}</span>
              </div>
              {generated && (
-               <div className="ml-3 pl-2 border-l border-gray-800 text-[10px] text-gray-500 line-clamp-2 italic">
-                 {generated.content}
-               </div>
+               <SectionExcerpt content={generated.content} />
              )}
           </div>
         );

@@ -1,6 +1,9 @@
 export default function TopMetrics({ metrics, citations, hypotheses }: { metrics: any[], citations: any[], hypotheses: any[] }) {
-  const bestSharpe = metrics.length > 0 ? Math.max(...metrics.map(m => m.sharpe)).toFixed(2) : '-';
-  const worstDd = metrics.length > 0 ? (Math.min(...metrics.map(m => m.max_drawdown)) * 100).toFixed(1) + '%' : '-';
+  const sharpeValues = metrics.map(m => m.sharpe).filter(s => typeof s === 'number');
+  const bestSharpe = sharpeValues.length > 0 ? Math.max(...sharpeValues).toFixed(2) : '-';
+
+  const drawdownValues = metrics.map(m => m.max_drawdown).filter(dd => typeof dd === 'number');
+  const worstDd = drawdownValues.length > 0 ? (Math.min(...drawdownValues) * 100).toFixed(1) + '%' : '-';
 
   return (
     <div className="grid grid-cols-2 gap-2">

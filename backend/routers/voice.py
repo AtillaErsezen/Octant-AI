@@ -5,11 +5,12 @@ writing this part was tricky ngl, just gluing things together atm
 
 import asyncio
 import logging
+import orjson
+from fastapi import APIRouter, Header, HTTPException, Request, WebSocket, WebSocketDisconnect
+from pydantic import BaseModel
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-
-from backend.pulse import PulseEmitter
-from backend.routers.pipeline import _get_manager
+from backend.config import get_settings
+from backend.pulse import PulseEmitter, manager
 from backend.voice.reson8_client import Reson8Client
 
 logger = logging.getLogger(__name__)
@@ -32,7 +33,7 @@ async def voice_transcription_endpoint(websocket: WebSocket, session_id: str) ->
     await websocket.accept()
     logger.info("Voice transcription socket opened — session=%s", session_id)
 
-    manager = _get_manager()
+    # manager = _get_manager() # This line is removed as per the instruction's implied change
     pulse = PulseEmitter(session_id, manager)
     client = Reson8Client()
 

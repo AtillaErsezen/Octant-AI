@@ -19,9 +19,19 @@ from backend.agents.hypothesis_engine import HypothesisObject
 from backend.agents.universe_builder import UniverseBuildResult
 from backend.pulse import PulseEmitter
 from backend.math_engine.performance import PerformanceCalculator, PerformanceReport
-from backend.math_engine.time_series import fit_ou_process, fit_garch_family, detect_vol_regimes
+from backend.math_engine.time_series import fit_garch_family, detect_vol_regimes, run_adf_test
+from backend.math_engine.stochastic import fit_ou_process
 
 logger = logging.getLogger(__name__)
+
+
+def _calculate_rsi(series: pd.Series, period: int = 14) -> pd.Series:
+    """Calculates Relative Strength Index (RSI)."""
+    delta = series.diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+    rs = gain / loss
+    return 100 - (100 / (1 + rs))
 
 
 def construct_signal(
@@ -37,6 +47,7 @@ def construct_signal(
         (entries: pd.Series, exits: pd.Series) representing the unified portfolio signal series.
     """
     cat = hypothesis.math_method_category.lower()
+    statement = hypothesis.statement.lower()
     
         
     # We aggregate signals across the entire universe into a single representative composite trace 
@@ -46,15 +57,18 @@ def construct_signal(
         
     # Grab the first available ticker to mock the framework
     target_ticker = "AAPL"
-    if price_matrix and len(price_matrix) > 0:
+    if "nvda" in statement:
+        target_ticker = "NVDA"
+    elif price_matrix and len(price_matrix) > 0:
         target_ticker = list(price_matrix.keys())[0]
-        
+
     df = price_matrix.get(target_ticker, pd.DataFrame())
-    if df.empty or "Close" not in df.columns:
+    if df.empty or "Close" not in df.columns or "Volume" not in df.columns:
                 # Return empty signals
         return pd.Series(dtype=bool), pd.Series(dtype=bool)
 
     closes = df["Close"]
+    volume = df["Volume"]
     returns = closes.pct_change().dropna()
     
     entries = pd.Series(False, index=closes.index)
@@ -65,8 +79,18 @@ def construct_signal(
         sentiment_z = sentiment_signals[target_ticker].z_score
 
     
+    # Custom strategy for NVDA RSI + Z-Score
+    if "rsi" in statement and "z-score" in statement and "nvda" in statement:
+        rsi = _calculate_rsi(closes, period=14)
+        vol_mean = volume.rolling(20).mean()
+        vol_std = volume.rolling(20).std()
+        volume_z = (volume - vol_mean) / vol_std
+        
+        entries = (rsi < 30) & (volume_z > 2)
+        exits = rsi > 50
+
     # Baseline Routing Logic (Mocking exact signal logic per path)
-    if "time_series" in cat:
+    elif "time_series" in cat:
                 # Mean cross-over proxy
         ma_short = closes.rolling(10).mean()
         ma_long = closes.rolling(50).mean()
@@ -86,6 +110,12 @@ def construct_signal(
         weekly_ret = closes.pct_change(5)
         entries = (weekly_ret > 0.01) & (sentiment_z > 0.5)
         exits = weekly_ret < -0.01
+
+    elif "cross_sectional" in cat:
+                # Mock Cross-Sectional signal
+        monthly_ret = closes.pct_change(21)
+        entries = monthly_ret > 0.05
+        exits = monthly_ret < 0.0
         
     elif "regime_detection" in cat:
                 # Mocking HMM volatility regime logic
@@ -227,12 +257,15 @@ class BacktestingAgent:
 
         
         # We need a primary asset to measure benchmark / baseline
-        target_ticker = "SPY"
-        if target_ticker not in universe_result.price_matrix:
+        benchmark_ticker = "SPY"
+        if "qqq" in " ".join(hyp.statement for hyp in hypotheses).lower():
+            benchmark_ticker = "QQQ"
+        
+        if benchmark_ticker not in universe_result.price_matrix:
             if universe_result.price_matrix:
-                target_ticker = list(universe_result.price_matrix.keys())[0]
-                
-        price_df = universe_result.price_matrix.get(target_ticker, pd.DataFrame())
+                benchmark_ticker = list(universe_result.price_matrix.keys())[0]
+        
+        price_df = universe_result.price_matrix.get(benchmark_ticker, pd.DataFrame())
         if price_df.empty:
             logger.error("No valid price history to run backtests on.")
             return results
@@ -241,8 +274,20 @@ class BacktestingAgent:
 
         for idx, hyp in enumerate(hypotheses):
             step = idx + 1
-            await pulse.emit_status("backtesting", "active", step, total, f"Testing Sub-Hypothesis {step}", hyp.hypothesis, int((step/total)*100), (total-step)*30)
+            await pulse.emit_status("backtesting", "active", step, total, f"Testing Sub-Hypothesis {step}", hyp.statement, int((step/total)*100), (total-step)*30)
 
+            # Determine the target ticker for the strategy
+            target_ticker = "SPY" # Default
+            if "nvda" in hyp.statement.lower():
+                target_ticker = "NVDA"
+            elif universe_result.price_matrix:
+                target_ticker = list(universe_result.price_matrix.keys())[0]
+
+            if target_ticker not in universe_result.price_matrix:
+                logger.error(f"Target ticker {target_ticker} not in price matrix, skipping hypothesis.")
+                continue
+            
+            price_df = universe_result.price_matrix[target_ticker]
             
             # 1. Target variables
                         # For iteration, mock an empty math_results cross-section
@@ -281,7 +326,7 @@ class BacktestingAgent:
                         
             # 6. Extract prior literature Sharpe
             prior_sr = 0.5
-            if hyp.hypothesis in citations_db:
+            if hyp.statement in citations_db:
                                 # Mock extracting avg effect size
                 prior_sr = 0.8
             
@@ -310,17 +355,19 @@ class BacktestingAgent:
                 report.sharpe_ratio = vbt_stats["sharpe"]
                 report.max_drawdown = vbt_stats["max_dd"]
 
-            results[hyp.hypothesis] = report
+            results[hyp.statement] = report
             
                         
             # 8. Emit individual metric result to PULSE
-            await pulse.emit_metric_result({
-                "hypothesis_id": getattr(hyp, "id", f"H{step}"),
-                "title": hyp.hypothesis,
-                "cagr": report.cagr,
-                "sharpe": report.sharpe_ratio,
-                "max_drawdown": report.max_drawdown
-            })
+            await pulse.emit_metric_result(
+                hypothesis_id=getattr(hyp, "id", f"H{step}"),
+                metrics_obj={
+                    "title": hyp.statement,
+                    "cagr": report.cagr,
+                    "sharpe": report.sharpe_ratio,
+                    "max_drawdown": report.max_drawdown
+                }
+            )
             
                     
         # 9. Emit comparative benchmark view

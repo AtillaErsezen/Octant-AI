@@ -43,17 +43,15 @@ class ConnectionManager:
             websocket: The incoming WebSocket connection to accept.
             session_id: Unique identifier for this pipeline session.
         """
+        await websocket.accept()
                 # Close any stale connection on the same session
         if session_id in self.active_connections:
             logger.warning(
                 "Replacing existing WebSocket for session_id=%s", session_id
             )
-            try:
-                await self.active_connections[session_id].close()
-            except Exception:
-                pass
+            # Old connection is closed by the loop's finally/except in main.py
+            # but we can be explicit here if desired.
 
-        await websocket.accept()
         self.active_connections[session_id] = websocket
         logger.info(
             "WebSocket registered — session_id=%s, total_active=%d",
@@ -110,10 +108,14 @@ class ConnectionManager:
                 pulse_event.get("payload_type", "?"),
             )
         except Exception as exc:
-            logger.error(
-                "PULSE send failed — session=%s, error=%s", session_id, str(exc)
+            # For the demo, we log and continue to avoid crashing the background pipeline
+            logger.warning(
+                "PULSE send failed for session=%s (probably disconnected): %s",
+                session_id,
+                str(exc)
             )
-            await self.disconnect(session_id)
+            # Remove from active connections to prevent future spam
+            self.active_connections.pop(session_id, None)
 
     async def broadcast_pulse(self, pulse_event: dict) -> None:
         """Broadcast a PULSE event to all active sessions.
@@ -369,6 +371,24 @@ class PulseEmitter:
         )
         await self.manager.send_pulse(self.session_id, event)
 
+    async def emit_comparison(self, comparison_obj: dict) -> None:
+        """Emit a comparison PULSE event.
+
+        Sent at the end of Agent 4 backtesting for cross-model benchmarking.
+
+        Args:
+            comparison_obj: Dict with keys: best_cagr, benchmark_cagr, completed_models.
+        """
+        event = self._build_event(
+            agent="backtest",
+            status="complete",
+            payload_type="comparison_card",
+            payload=comparison_obj,
+            message_title="Benchmark Comparison",
+            message_subtitle=f"Best CAGR: {comparison_obj.get('best_cagr', 0):.2%}",
+        )
+        await self.manager.send_pulse(self.session_id, event)
+
     async def emit_report_section(
         self, section_name: str, excerpt: str, is_complete: bool
     ) -> None:
@@ -450,3 +470,6 @@ class PulseEmitter:
             message_subtitle=error_message[:80],
         )
         await self.manager.send_pulse(self.session_id, event)
+
+# Global singleton connection manager
+manager = ConnectionManager()

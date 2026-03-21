@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     RESON8_API_KEY: str = ""
     FAL_API_KEY: str = ""
     DUST_API_KEY: str = ""
-    OPENBB_TOKEN: str = ""
+    OPENBB_PAT: str = ""
     CORE_API_KEY: Optional[str] = None
 
     
@@ -84,8 +84,8 @@ class Settings(BaseSettings):
 
     
     # ── Model Names ────────────────────────────────────────────────────────
-    GEMINI_REASONING_MODEL: str = "gemini-2.5-pro-preview-05-06"
-    GEMINI_FLASH_MODEL: str = "gemini-2.0-flash"
+    GEMINI_REASONING_MODEL: str = "models/gemini-1.5-pro"
+    GEMINI_FLASH_MODEL: str = "models/gemini-1.5-flash"
     GEMINI_EMBEDDING_MODEL: str = "models/text-embedding-004"
 
     

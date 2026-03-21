@@ -59,8 +59,8 @@ class LaTeXAssembler:
             "\\usepackage{graphicx}",
             "\\usepackage{xcolor}",
             "\\usepackage{listings}",
-            "\\usepackage[backend=biber, style=apa]{biblatex}",
-            "\\addbibresource{references.bib}",
+            "% \\usepackage[backend=biber, style=apa]{biblatex}",
+            "% \\addbibresource{references.bib}",
             "\\usepackage{caption}",
             "\\usepackage{subcaption}",
             "\\usepackage{setspace}",
@@ -78,7 +78,7 @@ class LaTeXAssembler:
 
         
         # 2. Title Page
-        thesis_statement = hypotheses[0].thesis_statement if hypotheses else "Quantitative Trading Strategy Analysis"
+        thesis_statement = hypotheses[0].statement if hypotheses else "Quantitative Trading Strategy Analysis"
         latex.extend([
             "\\begin{titlepage}",
             "\\centering",
@@ -125,7 +125,7 @@ class LaTeXAssembler:
                 
                                 
                 # Check for equity curve figure mapping to primary hypothesis
-                primary_h = hypotheses[0].hypothesis if hypotheses else ""
+                primary_h = hypotheses[0].statement if hypotheses else ""
                 if primary_h in figure_paths:
                     latex.extend([
                         "\\begin{figure}[h!]",
@@ -139,7 +139,7 @@ class LaTeXAssembler:
         # 4. Bibliography
         latex.extend([
             "\\newpage",
-            "\\printbibliography[heading=bibintoc, title={References}]"
+            "% \\printbibliography[heading=bibintoc, title={References}]"
         ])
 
         
@@ -163,11 +163,11 @@ class LaTeXAssembler:
         ]
         
         for idx, h in enumerate(hypotheses):
-            report = results_manifest.get(h.hypothesis)
+            report = results_manifest.get(h.statement)
             if not report:
                 continue
                 
-            short_hyp = h.hypothesis[:30] + "..." if len(h.hypothesis) > 30 else h.hypothesis
+            short_hyp = h.statement[:30] + "..." if len(h.statement) > 30 else h.statement
             latex.append(
                 f"{self._latex_escape(short_hyp)} & "
                 f"{report.cagr*100:.1f}\\% & "

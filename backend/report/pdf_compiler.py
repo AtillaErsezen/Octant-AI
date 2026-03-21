@@ -34,6 +34,7 @@ class PDFCompiler:
         Returns:
             Absolute filepath to the generated PDF.
         """
+        output_dir = os.path.abspath(output_dir)
         os.makedirs(output_dir, exist_ok=True)
         tex_path = os.path.join(output_dir, f"{job_name}.tex")
         bib_path = os.path.join(output_dir, "references.bib")
@@ -54,7 +55,7 @@ class PDFCompiler:
         
                 
         # Biber Pass (bibliography linking)
-        await self._run_biber(output_dir, job_name)
+        # await self._run_biber(output_dir, job_name)
         
                 
         # Second Pass (embed cross-refs)

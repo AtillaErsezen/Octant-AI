@@ -18,9 +18,15 @@ export default function ResultsMatrix({ metrics }: { metrics: any[] }) {
             return (
               <tr key={i} className={`hover:bg-gray-800/50 transition-colors ${hasEdge ? 'bg-octGreen/5' : ''}`}>
                 <td className="p-2 text-xs text-gray-300 font-medium truncate max-w-[200px]" title={m.title}>{m.title}</td>
-                <td className={`p-2 text-xs text-right font-mono ${m.cagr > 0 ? 'text-octGreen' : 'text-red-400'}`}>{(m.cagr * 100).toFixed(1)}%</td>
-                <td className={`p-2 text-xs text-right font-mono ${hasEdge ? 'text-octGreen font-bold' : 'text-gray-400'}`}>{m.sharpe.toFixed(2)}</td>
-                <td className="p-2 text-xs text-right font-mono text-red-400/80">{(m.max_drawdown * 100).toFixed(1)}%</td>
+                <td className={`p-2 text-xs text-right font-mono ${m.cagr > 0 ? 'text-octGreen' : 'text-red-400'}`}>
+                  {typeof m.cagr === 'number' ? `${(m.cagr * 100).toFixed(1)}%` : 'N/A'}
+                </td>
+                <td className={`p-2 text-xs text-right font-mono ${hasEdge ? 'text-octGreen font-bold' : 'text-gray-400'}`}>
+                  {typeof m.sharpe === 'number' ? m.sharpe.toFixed(2) : 'N/A'}
+                </td>
+                <td className="p-2 text-xs text-right font-mono text-red-400/80">
+                  {typeof m.max_drawdown === 'number' ? `${(m.max_drawdown * 100).toFixed(1)}%` : 'N/A'}
+                </td>
               </tr>
             );
           })}

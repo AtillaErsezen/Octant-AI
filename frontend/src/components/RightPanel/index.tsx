@@ -1,6 +1,7 @@
 import ReportOutline from './ReportOutline';
 import DownloadPDF from './DownloadPDF';
 import TopMetrics from './TopMetrics';
+import { StopButton, RestartButton } from './ActionButtons';
 
 export default function RightPanel(props: any) {
   return (
@@ -9,7 +10,13 @@ export default function RightPanel(props: any) {
       <TopMetrics metrics={props.metricsMatrix} citations={props.citations} hypotheses={props.hypotheses} />
       <ReportOutline sections={props.reportOutline} />
       <div className="flex-grow" />
-      <DownloadPDF url={props.pdfUrl} />
+      <div>
+        <DownloadPDF url={props.pdfUrl} />
+        <div className="mt-4">
+            <StopButton />
+            <RestartButton />
+        </div>
+      </div>
     </div>
   );
 }

@@ -32,19 +32,20 @@ export default function App() {
     useEffect(() => {
         if (events.length === 0) return;
         const latest = events[events.length - 1];
-        if (!latest || !latest.type) return;
+        if (!latest) return;
 
+        console.log("PULSE Received:", latest);
         setActivityLog(prev => [...prev, latest]);
 
-        switch (latest.type) {
+        switch (latest.payload_type) {
             case 'status':
                 setAgentStatuses((prev: any) => ({
                     ...prev,
-                    [latest.payload.agent_id]: latest.payload
+                    [latest.agent]: latest.payload
                 }));
-                if (latest.payload.agent_id === "report" && latest.payload.status === "complete") {
+                if (latest.agent === "orchestrator" && latest.status === "complete") {
                     setPipelineStatus("complete");
-                    setPdfUrl(`http://localhost:8000/download/octant_report_${sessionId}.pdf`); // mock 
+                    setPdfUrl(`http://localhost:8000/static/reports/report_${sessionId}.pdf`);
                 }
                 break;
             case 'hypothesis_card':
@@ -80,7 +81,7 @@ export default function App() {
         setAgentStatuses({});
         
         try {
-            await fetch(`http://localhost:8000/api/research/run`, {
+            await fetch(`http://localhost:8000/api/pipeline/start`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

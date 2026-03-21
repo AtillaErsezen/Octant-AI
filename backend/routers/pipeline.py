@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 from backend.session_manager import session_manager
-from backend.pulse import PulseEmitter
+from backend.pulse import PulseEmitter, manager
 from backend.orchestrator import OctantOrchestrator, PipelineRequest
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ async def start_pipeline(payload: PipelineStartPayload, background_tasks: Backgr
         
     await session_manager.create(session_id)
     
-    pulse = PulseEmitter(session_id=session_id)
+    pulse = PulseEmitter(session_id=session_id, manager=manager)
     
     request = PipelineRequest(
         session_id=session_id,
