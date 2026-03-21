@@ -64,7 +64,7 @@ class OctantOrchestrator:
     """master pipeline coordinator enforcing the 5-agent directed acyclic graph lol"""
 
     def __init__(self):
-                # Initialise agents passing down the global injected Gemini resource
+                                # Initialise agents passing down the global injected Gemini resource
         self.hypothesis_engine = HypothesisEngine(gemini_client)
         self.literature_agent = LiteratureAgent(gemini_client)
         self.universe_builder = UniverseBuilder(gemini_client)

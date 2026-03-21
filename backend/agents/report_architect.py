@@ -57,8 +57,8 @@ class ReportArchitect:
         for h in hypotheses:
             report = results_manifest.get(h.statement)
             if report and report.raw_results_dict:
-                                # Mock extracting strategy return proxies from performance
-                                # Real implementation passes series matrices here. We pass empty for pure string compile test.
+                                                                # Mock extracting strategy return proxies from performance
+                                                                # Real implementation passes series matrices here. We pass empty for pure string compile test.
                 import pandas as pd
                 dummy_returns = pd.Series(np.random.normal(0, 0.01, 1000))
                 dummy_drawdown = dummy_returns.cumsum() - dummy_returns.cumsum().cummax()
@@ -126,13 +126,17 @@ class ReportArchitect:
             await pulse.emit_status("report", "active", idx+1, len(sections), f"Writing {sec_id}", "Awaiting tokens...", int((idx/len(sections))*100), (len(sections)-idx)*20)
             
                         
+                        
+                        
             # Using thread executor for sync streaming wrapper to avoid blocking async loop
             try:
-                                # Real streaming would iterate chunks:
+                                                                # Real streaming would iterate chunks:
                 response = model.generate_content(prompt, stream=False)
                 text = response.text
                 gemini_narratives[sec_id] = text
                 
+                                
+                                
                                 
                 # Emit to UI
                 await pulse.emit_report_section(sec_id, text, True)
@@ -140,6 +144,8 @@ class ReportArchitect:
                 logger.error("Gemini narrative failed for %s: %s", sec_id, e)
                 gemini_narratives[sec_id] = f"{sec_id} generation failed due to API threshold."
 
+        
+        
         
         # 4. Assemble LaTeX
         await pulse.emit_status("report", "active", 12, 12, "Compiling PDF", "Executing pdflatex on local OS", 95, 10)
@@ -153,6 +159,8 @@ class ReportArchitect:
             bibtex_content=bibtex_content
         )
         
+                
+                
                 
         # 5. Execute pdflatex shell command
         job_name = f"report_{session_id}"
