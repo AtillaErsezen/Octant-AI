@@ -59,9 +59,6 @@ async def start_pipeline(payload: PipelineStartPayload, background_tasks: Backgr
         sector=payload.sector
     )
     
-        
-        
-        
     # Hand off standard execution mapping back to the Async loop worker pool
     background_tasks.add_task(background_pipeline_runner, request, pulse)
     

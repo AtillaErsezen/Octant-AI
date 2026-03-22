@@ -60,7 +60,10 @@ class PCAResult:
 def run_ff5_regression(strategy_returns: pd.Series, ff5_factors: pd.DataFrame) -> Optional[FF5RegressionResult]:
     """runs ols ff5 regression with newey-west hac standard errors lol"""
     try:
-                                # Align dates
+        if strategy_returns.empty or ff5_factors.empty:
+            return None
+        # Align dates
+        #FIXME: strategy_returns is a series, ff5_factors is a dataframe
         df = pd.concat([strategy_returns, ff5_factors], axis=1).dropna()
         if len(df) < 30:
             return None
@@ -68,10 +71,6 @@ def run_ff5_regression(strategy_returns: pd.Series, ff5_factors: pd.DataFrame) -
         y = df.iloc[:, 0]
         X = df.iloc[:, 1:]
         X = sm.add_constant(X)
-        
-                
-                
-                
         # Newey-West lag heuristic: floor(4 * (T/100)^(2/9))
         T = len(df)
         max_lags = int(np.floor(4 * (T / 100)**(2/9)))

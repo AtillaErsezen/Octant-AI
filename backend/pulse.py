@@ -44,7 +44,7 @@ class ConnectionManager:
             session_id: Unique identifier for this pipeline session.
         """
         await websocket.accept()
-                # Close any stale connection on the same session
+        # Close any stale connection on the same session
         if session_id in self.active_connections:
             logger.warning(
                 "Replacing existing WebSocket for session_id=%s", session_id
@@ -99,6 +99,7 @@ class ConnectionManager:
             return
 
         try:
+            #FIXME: Type is not JSON serializable: numpy.float64
             raw = orjson.dumps(pulse_event).decode("utf-8")
             await ws.send_text(raw)
             logger.debug(
@@ -415,6 +416,7 @@ class PulseEmitter:
             message_title=f"Writing: {section_name}",
             message_subtitle="Complete" if is_complete else "Streaming...",
         )
+        print("SENDING PULSE EVENT FROM REPORT SECTION")
         await self.manager.send_pulse(self.session_id, event)
 
     async def emit_transcription(
