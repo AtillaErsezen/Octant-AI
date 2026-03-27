@@ -31,7 +31,7 @@
 </table>
   <br/>
 
-  <video src="octant-full.mp4" width="100%" controls autoplay muted loop></video>
+  <video src="https://github.com/user-attachments/assets/a38a310d-b3b2-4539-976c-cc5711f2703a" width="100%" controls autoplay muted loop></video>
 
 </div>
 
