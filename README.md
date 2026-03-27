@@ -29,8 +29,9 @@
 <td align="center"><b>IMRaD PDF</b><br/><sub>Goldman-grade LaTeX report</sub></td>
 </tr>
 </table>
-
+<br>
 https://github.com/user-attachments/assets/a38a310d-b3b2-4539-976c-cc5711f2703a
+</br>
 ---
 
 ## Table of Contents
