@@ -29,6 +29,9 @@
 <td align="center"><b>IMRaD PDF</b><br/><sub>Goldman-grade LaTeX report</sub></td>
 </tr>
 </table>
+  <br/>
+
+  <video src="octant-full.mp4" width="100%" controls autoplay muted loop></video>
 
 </div>
 
@@ -731,7 +734,7 @@ graph LR
     end
 
     subgraph GEMINI["🔵 Google DeepMind"]
-        GM["Gemini 2.5 Pro\nHypothesis decomposition\nPaper abstract synthesis\nLaTeX narrative writing\nResults interpretation\n─────────────────\nGemini Flash\nParallel abstract batches\nReddit NLP extraction\ntext-embedding-004 ChromaDB"]
+        GM["Gemini 2.5 Pro\nHypothesis decomposition\nPaper abstract synthesis\nLaTeX narrative writing\nResults interpretation\n─────────────────\nGemini Flash\nParallel abstract batches\nReddit NLP extraction\ngemini-embedding-001 ChromaDB"]
     end
 
     subgraph RESON8["🟢 Reson8"]
