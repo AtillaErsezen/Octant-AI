@@ -29,12 +29,8 @@
 <td align="center"><b>IMRaD PDF</b><br/><sub>Goldman-grade LaTeX report</sub></td>
 </tr>
 </table>
-  <br/>
 
-  <video src="octant-full.mp4" width="100%" controls autoplay muted loop></video>
-
-</div>
-
+https://github.com/user-attachments/assets/a38a310d-b3b2-4539-976c-cc5711f2703a
 ---
 
 ## Table of Contents
